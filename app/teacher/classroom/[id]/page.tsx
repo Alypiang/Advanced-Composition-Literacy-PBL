@@ -18,17 +18,34 @@ export default function TeacherClassroomPage() {
   const [classroom, setClassroom] = useState<Classroom | null>(null)
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadClassroom = async () => {
       try {
-        const response = await fetch(`/api/classroom/${classroomId}`)
-        if (response.ok) {
-          const data = await response.json()
-          setClassroom(data)
+        if (!classroomId) {
+          console.error('No classroomId found in route params')
+          setError('Classroom not found. Please return to the dashboard and create a new classroom.')
+          return
         }
+
+        const response = await fetch(`/api/classroom/${classroomId}`)
+        if (!response.ok) {
+          console.error('Failed to load classroom. Status:', response.status)
+          if (response.status === 404) {
+            setError('This classroom could not be found. It may have been closed or the link is invalid.')
+          } else {
+            setError('There was a problem loading this classroom. Please try again or create a new one.')
+          }
+          return
+        }
+
+        const data = await response.json()
+        setClassroom(data)
+        setError(null)
       } catch (error) {
         console.error('Failed to load classroom:', error)
+        setError('There was a problem loading this classroom. Please try again.')
       }
     }
 
@@ -77,6 +94,20 @@ export default function TeacherClassroomPage() {
       socket.off('question-asked')
     }
   }, [classroomId])
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center space-y-4">
+        <div className="text-xl text-red-600 text-center max-w-xl">{error}</div>
+        <button
+          onClick={() => window.location.href = '/teacher/dashboard'}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+        >
+          Go to Teacher Dashboard
+        </button>
+      </div>
+    )
+  }
 
   const handleToggleTool = async (toolType: ToolType) => {
     try {

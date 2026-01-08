@@ -152,6 +152,8 @@ export function toggleTool(classroomId: string, toolType: string) {
   } else {
     classroom.activeTools.push(toolType)
   }
+  // Persist tool changes so they survive server restarts
+  saveClassrooms()
   return true
 }
 
@@ -181,6 +183,8 @@ export function createGroups(classroomId: string, groupSize: number, random: boo
     })
   }
   
+  // Persist group changes
+  saveClassrooms()
   return true
 }
 
@@ -194,6 +198,8 @@ export function updateGroups(classroomId: string, groups: Array<{ groupId: strin
     student.groupId = group?.groupId
   })
   
+  // Persist manual group updates
+  saveClassrooms()
   return true
 }
 
@@ -204,6 +210,8 @@ export function addResearchLink(classroomId: string, url: string) {
   if (!classroom.researchLinks.includes(url)) {
     classroom.researchLinks.push(url)
   }
+  // Persist research link changes
+  saveClassrooms()
   return true
 }
 
@@ -215,6 +223,8 @@ export function removeResearchLink(classroomId: string, url: string) {
   if (index > -1) {
     classroom.researchLinks.splice(index, 1)
   }
+  // Persist research link removal
+  saveClassrooms()
   return true
 }
 
