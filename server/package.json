@@ -1,8 +1,14 @@
 {
   "name": "pbl-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Advanced Composition Literacy PBL",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "node index.js"
   },
   "dependencies": {
     "express": "^4.18.2",
