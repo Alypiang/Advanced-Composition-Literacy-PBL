@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { getSocket } from '@/lib/useSocket'
 import { Classroom, Student, ToolType } from '@/lib/types'
@@ -19,23 +19,29 @@ export default function TeacherClassroomPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const hasLoadedOnceRef = useRef(false)
 
   useEffect(() => {
-    const loadClassroom = async () => {
+    const loadClassroom = async (isInitialLoad: boolean) => {
       try {
         if (!classroomId) {
           console.error('No classroomId found in route params')
-          setError('Classroom not found. Please return to the dashboard and create a new classroom.')
+          if (isInitialLoad) {
+            setError('Classroom not found. Please return to the dashboard and create a new classroom.')
+          }
           return
         }
 
         const response = await fetch(`/api/classroom/${classroomId}`)
         if (!response.ok) {
           console.error('Failed to load classroom. Status:', response.status)
-          if (response.status === 404) {
-            setError('This classroom could not be found. It may have been closed or the link is invalid.')
-          } else {
-            setError('There was a problem loading this classroom. Please try again or create a new one.')
+          // Only set error on initial load, not on refresh attempts
+          if (isInitialLoad && !hasLoadedOnceRef.current) {
+            if (response.status === 404) {
+              setError('This classroom could not be found. It may have been closed or the link is invalid.')
+            } else {
+              setError('There was a problem loading this classroom. Please try again or create a new one.')
+            }
           }
           return
         }
@@ -43,44 +49,52 @@ export default function TeacherClassroomPage() {
         const data = await response.json()
         setClassroom(data)
         setError(null)
+        hasLoadedOnceRef.current = true
       } catch (error) {
         console.error('Failed to load classroom:', error)
-        setError('There was a problem loading this classroom. Please try again.')
+        // Only set error on initial load, not on refresh attempts
+        if (isInitialLoad && !hasLoadedOnceRef.current) {
+          setError('There was a problem loading this classroom. Please try again.')
+        }
       }
     }
 
-    loadClassroom()
-    const interval = setInterval(loadClassroom, 1000)
+    // Initial load
+    loadClassroom(true)
+    // Refresh every second (but don't show errors on refresh failures)
+    const interval = setInterval(() => {
+      loadClassroom(false)
+    }, 1000)
 
     const socket = getSocket()
     socket.emit('join-classroom', { classroomId, role: 'teacher' })
 
     socket.on('student-list-updated', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     socket.on('response-updated', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     socket.on('question-updated', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     socket.on('groups-changed', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     socket.on('research-links-updated', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     socket.on('student-response', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     socket.on('question-asked', () => {
-      loadClassroom()
+      loadClassroom(false)
     })
 
     return () => {
