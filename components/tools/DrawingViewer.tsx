@@ -3,19 +3,22 @@
 import { useEffect, useState } from 'react'
 
 interface DrawingViewerProps {
-  imageData?: string
+  imageData?: {
+    image: string
+    comment?: string
+  }
 }
 
 export default function DrawingViewer({ imageData }: DrawingViewerProps) {
-  const [currentImage, setCurrentImage] = useState(imageData)
+  const [currentData, setCurrentData] = useState(imageData)
 
   useEffect(() => {
     if (imageData) {
-      setCurrentImage(imageData)
+      setCurrentData(imageData)
     }
   }, [imageData])
 
-  if (!currentImage) {
+  if (!currentData?.image) {
     return (
       <div className="text-gray-500 text-center py-4">
         No drawing yet
@@ -26,14 +29,20 @@ export default function DrawingViewer({ imageData }: DrawingViewerProps) {
   return (
     <div>
       <h3 className="text-lg font-bold text-gray-800 mb-4">Drawing</h3>
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block">
-        <img 
-          src={currentImage} 
-          alt="Student drawing" 
+      <div className="border-2 border-gray-300 rounded-lg overflow-hidden inline-block mb-4">
+        <img
+          src={currentData.image}
+          alt="Student drawing"
           className="max-w-full h-auto"
-          key={currentImage?.substring(0, 50)} // Force re-render when image changes
+          key={currentData.image?.substring(0, 50)} // Force re-render when image changes
         />
       </div>
+      {currentData.comment && (
+        <div className="bg-gray-50 p-3 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-700 mb-2">Comment:</h4>
+          <p className="text-sm text-gray-600">{currentData.comment}</p>
+        </div>
+      )}
     </div>
   )
 }

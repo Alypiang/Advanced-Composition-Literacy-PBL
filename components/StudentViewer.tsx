@@ -5,6 +5,7 @@ import DesignThinkingViewer from '@/components/tools/DesignThinkingViewer'
 import DecisionMatrixViewer from '@/components/tools/DecisionMatrixViewer'
 import DrawingViewer from '@/components/tools/DrawingViewer'
 import QuestionsViewer from '@/components/tools/QuestionsViewer'
+import VennDiagramViewer from '@/components/tools/VennDiagramViewer'
 
 interface StudentViewerProps {
   student: Student
@@ -46,6 +47,13 @@ export default function StudentViewer({ student, activeTools }: StudentViewerPro
                 <QuestionsViewer
                   key={toolType}
                   questions={student.responses.questions}
+                />
+              )
+            case 'vennDiagram':
+              return (
+                <VennDiagramViewer
+                  key={toolType}
+                  data={student.responses.vennDiagram}
                 />
               )
             default:

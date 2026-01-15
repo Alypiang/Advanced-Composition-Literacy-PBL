@@ -101,7 +101,7 @@ export function getClassroomByCode(joinCode: string): Classroom | undefined {
 export function addStudent(classroomId: string, studentName: string): Student | null {
   const classroom = classrooms.get(classroomId)
   if (!classroom) return null
-  
+
   // Check for duplicate names
   if (classroom.students.some(s => s.name.toLowerCase() === studentName.toLowerCase())) {
     return null
@@ -135,10 +135,10 @@ export function updateStudentResponse(
     // For questions, replace the entire array (it's already a complete array from the tool)
     (student.responses as any)[toolType] = data.questions || data
   } else if (toolType === 'drawing') {
-    // For drawing, it's a string (base64 image), so just assign it
+    // For drawing, it's an object with image and comment
     (student.responses as any)[toolType] = data
   } else {
-    // For other types (designThinking, decisionMatrix), merge the data
+    // For other types (designThinking, decisionMatrix, vennDiagram), merge the data
     if (!student.responses[toolType as keyof typeof student.responses]) {
       (student.responses as any)[toolType] = {}
     }
@@ -319,4 +319,3 @@ export function addStudentQuestion(classroomId: string, studentId: string, quest
   saveClassrooms()
   return true
 }
-

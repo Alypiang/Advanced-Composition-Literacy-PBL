@@ -11,6 +11,7 @@ import ResearchManager from '@/components/ResearchManager'
 import GroupManager from '@/components/GroupManager'
 import PrivateQuestions from '@/components/PrivateQuestions'
 import QuestionsManager from '@/components/QuestionsManager'
+import CurriculumManager from '@/components/CurriculumManager'
 
 export default function TeacherClassroomPage() {
   const params = useParams()
@@ -19,6 +20,7 @@ export default function TeacherClassroomPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'tools' | 'curriculum'>('tools')
   const hasLoadedOnceRef = useRef(false)
 
   useEffect(() => {
@@ -269,9 +271,12 @@ export default function TeacherClassroomPage() {
                       content += `
                         <div class="section">
                           <h2>Drawing</h2>
-                          <img src="${selectedStudent.responses.drawing}" alt="Student drawing" />
-                        </div>
+                          <img src="${selectedStudent.responses.drawing.image}" alt="Student drawing" />
                       `
+                      if (selectedStudent.responses.drawing.comment) {
+                        content += `<p><strong>Comment:</strong> ${selectedStudent.responses.drawing.comment}</p>`
+                      }
+                      content += `</div>`
                     }
                     
                     if (selectedStudent.responses.questions && selectedStudent.responses.questions.length > 0) {
@@ -283,6 +288,18 @@ export default function TeacherClassroomPage() {
                             <p><strong>A:</strong> ${q.answer || '(No answer)'}</p>
                             <hr>
                           `).join('')}
+                        </div>
+                      `
+                    }
+
+                    if (selectedStudent.responses.vennDiagram) {
+                      const vd = selectedStudent.responses.vennDiagram
+                      content += `
+                        <div class="section">
+                          <h2>Venn Diagram</h2>
+                          <p><strong>Left Set (${vd.leftLabel}):</strong> ${vd.items.filter(i => i.position === 'left').map(i => i.text).join(', ') || 'None'}</p>
+                          <p><strong>Intersection:</strong> ${vd.items.filter(i => i.position === 'center').map(i => i.text).join(', ') || 'None'}</p>
+                          <p><strong>Right Set (${vd.rightLabel}):</strong> ${vd.items.filter(i => i.position === 'right').map(i => i.text).join(', ') || 'None'}</p>
                         </div>
                       `
                     }
@@ -307,74 +324,109 @@ export default function TeacherClassroomPage() {
 
         <div className="flex-1 flex">
           <div className="flex-1 p-6 space-y-6">
-            <ToolSelector
-              activeTools={classroom.activeTools}
-              onToggleTool={handleToggleTool}
-            />
-            
-            {classroom.activeTools.includes('questions') && (
-              <QuestionsManager
-                classroom={classroom}
-                onAddQuestion={async (question) => {
-                  try {
-                    const response = await fetch(`/api/classroom/${classroomId}/question`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ question, action: 'add' }),
-                    })
-                    if (response.ok) {
-                      const { classroom: updated } = await response.json()
-                      setClassroom(updated)
-                      const socket = getSocket()
-                      socket.emit('question-updated', { classroomId })
-                    }
-                  } catch (error) {
-                    console.error('Failed to add question:', error)
-                  }
-                }}
-                onEditQuestion={async (questionId, question) => {
-                  try {
-                    const response = await fetch(`/api/classroom/${classroomId}/question`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ questionId, question, action: 'edit' }),
-                    })
-                    if (response.ok) {
-                      const { classroom: updated } = await response.json()
-                      setClassroom(updated)
-                      const socket = getSocket()
-                      socket.emit('question-updated', { classroomId })
-                    }
-                  } catch (error) {
-                    console.error('Failed to edit question:', error)
-                  }
-                }}
-                onDeleteQuestion={async (questionId) => {
-                  try {
-                    const response = await fetch(`/api/classroom/${classroomId}/question`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ questionId, action: 'delete' }),
-                    })
-                    if (response.ok) {
-                      const { classroom: updated } = await response.json()
-                      setClassroom(updated)
-                      const socket = getSocket()
-                      socket.emit('question-updated', { classroomId })
-                    }
-                  } catch (error) {
-                    console.error('Failed to delete question:', error)
-                  }
-                }}
-              />
+            {/* Tab Navigation */}
+            <div className="border-b border-gray-200">
+              <nav className="flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('tools')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'tools'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Tools
+                </button>
+                <button
+                  onClick={() => setActiveTab('curriculum')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'curriculum'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Curriculum
+                </button>
+              </nav>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'tools' && (
+              <>
+                <ToolSelector
+                  activeTools={classroom.activeTools}
+                  onToggleTool={handleToggleTool}
+                />
+
+                {classroom.activeTools.includes('questions') && (
+                  <QuestionsManager
+                    classroom={classroom}
+                    onAddQuestion={async (question) => {
+                      try {
+                        const response = await fetch(`/api/classroom/${classroomId}/question`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ question, action: 'add' }),
+                        })
+                        if (response.ok) {
+                          const { classroom: updated } = await response.json()
+                          setClassroom(updated)
+                          const socket = getSocket()
+                          socket.emit('question-updated', { classroomId })
+                        }
+                      } catch (error) {
+                        console.error('Failed to add question:', error)
+                      }
+                    }}
+                    onEditQuestion={async (questionId, question) => {
+                      try {
+                        const response = await fetch(`/api/classroom/${classroomId}/question`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ questionId, question, action: 'edit' }),
+                        })
+                        if (response.ok) {
+                          const { classroom: updated } = await response.json()
+                          setClassroom(updated)
+                          const socket = getSocket()
+                          socket.emit('question-updated', { classroomId })
+                        }
+                      } catch (error) {
+                        console.error('Failed to edit question:', error)
+                      }
+                    }}
+                    onDeleteQuestion={async (questionId) => {
+                      try {
+                        const response = await fetch(`/api/classroom/${classroomId}/question`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ questionId, action: 'delete' }),
+                        })
+                        if (response.ok) {
+                          const { classroom: updated } = await response.json()
+                          setClassroom(updated)
+                          const socket = getSocket()
+                          socket.emit('question-updated', { classroomId })
+                        }
+                      } catch (error) {
+                        console.error('Failed to delete question:', error)
+                      }
+                    }}
+                  />
+                )}
+
+                {selectedStudent && (
+                  <StudentViewer
+                    key={`${selectedStudent.studentId}-${refreshKey}`}
+                    student={selectedStudent}
+                    activeTools={classroom.activeTools}
+                  />
+                )}
+              </>
             )}
-            
-            {selectedStudent && (
-              <StudentViewer
-                key={`${selectedStudent.studentId}-${refreshKey}`}
-                student={selectedStudent}
-                activeTools={classroom.activeTools}
-              />
+
+            {activeTab === 'curriculum' && (
+              <CurriculumManager />
             )}
           </div>
 

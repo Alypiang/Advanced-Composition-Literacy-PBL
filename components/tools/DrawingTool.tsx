@@ -27,6 +27,7 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
   const [selectedColor, setSelectedColor] = useState('#000000')
   const [selectedThickness, setSelectedThickness] = useState(5)
   const [isErasing, setIsErasing] = useState(false)
+  const [comment, setComment] = useState(student.responses.drawing?.comment || '')
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -36,12 +37,12 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
     if (!ctx) return
 
     // Load saved drawing
-    if (student.responses.drawing) {
+    if (student.responses.drawing?.image) {
       const img = new Image()
       img.onload = () => {
         ctx.drawImage(img, 0, 0)
       }
-      img.src = student.responses.drawing
+      img.src = student.responses.drawing.image
     } else {
       // Initialize white background
       ctx.fillStyle = '#FFFFFF'
@@ -95,6 +96,18 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
     ctx.moveTo(x, y)
   }
 
+  const saveDrawing = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const dataUrl = canvas.toDataURL('image/png')
+    const data = {
+      image: dataUrl,
+      comment: comment.trim() || undefined
+    }
+    onUpdate(data)
+  }, [comment, onUpdate])
+
   const stopDrawing = () => {
     if (!isDrawing) return
     setIsDrawing(false)
@@ -108,18 +121,13 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
     ctx.beginPath()
 
     // Auto-save
-    const dataUrl = canvas.toDataURL('image/png')
-    onUpdate(dataUrl)
+    saveDrawing()
   }
 
   // Throttled save function for real-time updates
   const throttledSave = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const dataUrl = canvas.toDataURL('image/png')
-    onUpdate(dataUrl)
-  }, [onUpdate])
+    saveDrawing()
+  }, [saveDrawing])
 
   // Also save while drawing (throttled)
   useEffect(() => {
@@ -141,7 +149,7 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
 
     ctx.fillStyle = '#FFFFFF'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
-    onUpdate(canvas.toDataURL('image/png'))
+    saveDrawing()
   }
 
   const exportImage = () => {
@@ -230,7 +238,7 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
         </div>
       </div>
 
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
+      <div className="border-2 border-gray-300 rounded-lg overflow-hidden mb-4">
         <canvas
           ref={canvasRef}
           width={800}
@@ -242,8 +250,28 @@ export default function DrawingTool({ student, onUpdate }: DrawingToolProps) {
           className="cursor-crosshair bg-white"
         />
       </div>
+
+      {/* Comment section */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Comment (Optional)
+        </label>
+        <textarea
+          value={comment}
+          onChange={(e) => {
+            setComment(e.target.value)
+            // Auto-save comment changes
+            const timer = setTimeout(() => {
+              saveDrawing()
+            }, 500)
+            return () => clearTimeout(timer)
+          }}
+          placeholder="Add a comment about your drawing..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          rows={3}
+        />
+      </div>
     </div>
   )
 }
-
 

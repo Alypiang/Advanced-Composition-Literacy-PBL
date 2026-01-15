@@ -8,6 +8,7 @@ import DesignThinkingTool from '@/components/tools/DesignThinkingTool'
 import DecisionMatrixTool from '@/components/tools/DecisionMatrixTool'
 import DrawingTool from '@/components/tools/DrawingTool'
 import QuestionsTool from '@/components/tools/QuestionsTool'
+import VennDiagramTool from '@/components/tools/VennDiagramTool'
 import ResearchTab from '@/components/ResearchTab'
 import PrivateQuestionBox from '@/components/PrivateQuestionBox'
 
@@ -193,6 +194,14 @@ export default function StudentClassroomPage() {
                         student={student}
                         classroom={classroom}
                         onUpdate={(data) => handleResponseUpdate('questions', data)}
+                      />
+                    )
+                  case 'vennDiagram':
+                    return (
+                      <VennDiagramTool
+                        key={toolType}
+                        student={student}
+                        onUpdate={(data) => handleResponseUpdate('vennDiagram', data)}
                       />
                     )
                   default:

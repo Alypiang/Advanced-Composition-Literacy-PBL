@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Classroom Collaboration Tool',
+  title: 'CoLab Classroom',
   description: 'Interactive classroom collaboration platform',
 }
 
@@ -17,5 +17,3 @@ export default function RootLayout({
     </html>
   )
 }
-
-

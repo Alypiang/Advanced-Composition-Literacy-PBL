@@ -28,6 +28,11 @@ const tools: Array<{ id: ToolType; name: string; description: string }> = [
     name: 'Questions',
     description: 'Teacher questions and student responses',
   },
+  {
+    id: 'vennDiagram',
+    name: 'Venn Diagram',
+    description: 'Interactive diagram for comparing and contrasting sets',
+  },
 ]
 
 export default function ToolSelector({ activeTools, onToggleTool }: ToolSelectorProps) {

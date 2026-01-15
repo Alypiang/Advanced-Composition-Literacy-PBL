@@ -19,13 +19,25 @@ export interface Student {
       }>
       groupMembers: string[]
     }
-    drawing?: string // base64 image data
+    drawing?: {
+      image: string // base64 image data
+      comment?: string
+    }
     questions?: Array<{
       id: string
       question: string
       answer?: string
       timestamp: number
     }>
+    vennDiagram?: {
+      leftLabel: string
+      rightLabel: string
+      items: Array<{
+        id: string
+        text: string
+        position: 'left' | 'right' | 'center'
+      }>
+    }
   }
 }
 
@@ -47,10 +59,11 @@ export interface Classroom {
   }>
 }
 
-export type ToolType = 
+export type ToolType =
   | 'designThinking'
   | 'decisionMatrix'
   | 'drawing'
   | 'questions'
+  | 'vennDiagram'
 
 

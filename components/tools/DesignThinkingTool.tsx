@@ -45,42 +45,6 @@ export default function DesignThinkingTool({ student, onUpdate }: DesignThinking
         <div className="relative" style={{ width: '700px', height: '700px' }}>
           {/* Circular layout with SVG arrows */}
           <svg width="700" height="700" className="absolute top-0 left-0 pointer-events-none">
-            {/* Arrows connecting stages in circular flow */}
-            <path
-              d="M 350 50 Q 500 150 500 250"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="3"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 500 250 Q 550 350 500 450"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="3"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 500 450 Q 350 550 200 450"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="3"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 200 450 Q 100 350 200 250"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="3"
-              markerEnd="url(#arrowhead)"
-            />
-            <path
-              d="M 200 250 Q 200 150 350 50"
-              fill="none"
-              stroke="#3B82F6"
-              strokeWidth="3"
-              markerEnd="url(#arrowhead)"
-            />
             <defs>
               <marker
                 id="arrowhead"
@@ -93,6 +57,51 @@ export default function DesignThinkingTool({ student, onUpdate }: DesignThinking
                 <polygon points="0 0, 10 3, 0 6" fill="#3B82F6" />
               </marker>
             </defs>
+            
+            {/* Connect & Define (top) -> Ideate (right): from right middle of top box to top middle of right box */}
+            <path
+              d="M 450 74 L 600 250"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="3"
+              markerEnd="url(#arrowhead)"
+            />
+            
+            {/* Ideate (right) -> Create (bottom-right): straight line from bottom center of right box to top center of bottom-right box */}
+            <path
+              d="M 600 398 L 500 500"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="3"
+              markerEnd="url(#arrowhead)"
+            />
+            
+            {/* Create (bottom-right) -> Implement (bottom-left): straight line from left center of bottom-right box to right center of bottom-left box */}
+            <path
+              d="M 400 574 L 300 574"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="3"
+              markerEnd="url(#arrowhead)"
+            />
+            
+            {/* Implement (bottom-left) -> Reflect & Improve (left): from top middle of implement to bottom middle of reflect and improve */}
+            <path
+              d="M 200 500 L 100 398"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="3"
+              markerEnd="url(#arrowhead)"
+            />
+            
+            {/* Reflect & Improve (left) -> Connect & Define (top): from top middle of reflect and improve to left middle of connect and define */}
+            <path
+              d="M 100 250 L 250 74"
+              fill="none"
+              stroke="#3B82F6"
+              strokeWidth="3"
+              markerEnd="url(#arrowhead)"
+            />
           </svg>
 
           {/* Stage boxes */}
@@ -143,4 +152,3 @@ export default function DesignThinkingTool({ student, onUpdate }: DesignThinking
     </div>
   )
 }
-
